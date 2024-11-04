@@ -1,0 +1,1 @@
+This is a sample text file that we will use to demonstrate the line breaking algorithm. The algorithm should find the optimal way to break these lines based on the specified line length while minimizing the white space at the end of each line.

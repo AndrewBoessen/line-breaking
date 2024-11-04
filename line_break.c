@@ -23,22 +23,57 @@ char **read_file_to_array(const char *filename, int *num_strings) {
     return NULL;
   }
 
+  // First pass: count words
   char line[1024];
-  int num_lines = 0;
+  *num_strings = 0;
   while (fgets(line, sizeof(line), file)) {
-    num_lines++;
+    char *word = strtok(line, " \n\t\r");
+    while (word != NULL) {
+      (*num_strings)++;
+      word = strtok(NULL, " \n\t\r");
+    }
   }
+
+  // Allocate array of string pointers
+  char **arr = (char **)malloc(*num_strings * sizeof(char *));
+  if (arr == NULL) {
+    fclose(file);
+    *num_strings = 0;
+    return NULL;
+  }
+
+  // Initialize all pointers to NULL
+  for (int i = 0; i < *num_strings; i++) {
+    arr[i] = NULL;
+  }
+
+  // Reset file pointer to beginning
   rewind(file);
 
-  char **arr = (char **)malloc(num_lines * sizeof(char *));
-  *num_strings = 0;
-
+  // Second pass: store words
+  int word_index = 0;
   while (fgets(line, sizeof(line), file)) {
-    char *word = strtok(line, " \n");
-    while (word != NULL) {
-      arr[*num_strings] = strdup(word);
-      (*num_strings)++;
-      word = strtok(NULL, " \n");
+    char *word = strtok(line, " \n\t\r");
+    while (word != NULL && word_index < *num_strings) {
+      // Allocate space for the word plus null terminator
+      size_t word_len = strlen(word);
+      arr[word_index] = (char *)malloc((word_len + 1) * sizeof(char));
+
+      if (arr[word_index] == NULL) {
+        // Cleanup on allocation failure
+        for (int i = 0; i < word_index; i++) {
+          free(arr[i]);
+        }
+        free(arr);
+        fclose(file);
+        *num_strings = 0;
+        return NULL;
+      }
+
+      // Copy the word
+      strcpy(arr[word_index], word);
+      word_index++;
+      word = strtok(NULL, " \n\t\r");
     }
   }
 
@@ -62,7 +97,7 @@ int cost(char **strings, int start, int end, int line_length) {
   }
   // start after end
   if (start > end) {
-    return INT_MAX; // infinite cost
+    return 100000; // infinite cost
   }
   // calculate num character between breaks
   int num_chars = 0;
@@ -76,7 +111,7 @@ int cost(char **strings, int start, int end, int line_length) {
   }
   int white_space = line_length - num_chars;
   // infinite cost if num chars longer than line length
-  return white_space >= 0 ? white_space : INT_MAX;
+  return white_space >= 0 ? white_space * white_space : 100000;
 }
 
 /**
@@ -97,6 +132,16 @@ int *create_cost_table(char **strings, int line_length, int end, int n) {
   }
 
   return table;
+}
+void printArray(int arr[], int size) {
+  printf("Array elements: ");
+  for (int i = 0; i < size; i++) {
+    printf("%d", arr[i]);
+    if (i < size - 1) {
+      printf(", ");
+    }
+  }
+  printf("\n");
 }
 
 /**
@@ -121,11 +166,12 @@ int *find_line_breaks(char **strings, int line_length, int n) {
       psi_vals = create_cost_table(strings, line_length, i, n);
     } else {
       // optimal break values
-      int *breaks = (int *)calloc(-1, n * sizeof(int));
+      int *breaks = (int *)malloc(n * sizeof(int));
       // populate new psi_vals for b_j-1
-      int *new_psi_vals = (int *)calloc(INT_MAX, n * sizeof(int));
+      int *new_psi_vals = (int *)malloc(n * sizeof(int));
+      memset(new_psi_vals, 0xF, n * sizeof(int));
       // optimize for b_j
-      for (int j = 1; i <= n; j++) {
+      for (int j = 1; j <= n; j++) {
         // loop over b
         int *costs = create_cost_table(strings, line_length, j, n);
         for (int k = 1; k <= n; k++) {
@@ -142,6 +188,7 @@ int *find_line_breaks(char **strings, int line_length, int n) {
       psi_vals = new_psi_vals;
       free(new_psi_vals);
     }
+    printArray(psi_vals, n);
   }
 
   // build breaks by walking through optimal_breaks
