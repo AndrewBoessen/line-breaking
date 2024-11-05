@@ -63,6 +63,3 @@ Contributions to improve the algorithm or add new features are welcome. Please s
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
-```
-
-This README provides an overview of the project, explains the main features and functions, gives usage instructions, and briefly describes the algorithm and memory management approach. You can adjust or expand this README as needed to better fit your project's specific details or requirements.
