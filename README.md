@@ -1,4 +1,4 @@
-# Dynamic Line Breaking in C
+# Line Breaking
 
 This repository contains a C implementation of dynamic line breaking using dynamic programming. The algorithm optimally breaks a given text into lines of a specified maximum length, minimizing the total cost of line breaks.
 
