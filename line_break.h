@@ -27,18 +27,20 @@ char **read_file_to_array(const char *filename, int *num_strings);
  * @param line_length Max number of chars in one line
  * @returns int Cost for breaks points start and end
  */
-int cost(char **strings, int start, int end, int line_length);
 
+int cost(char **strings, int start, int end, int line_length);
 /**
  * @brief Create a table with cost for family of break pairs
  *
  * @param strings Arrays of strings in text to break
  * @param line_length Max number of chars in single line
- * @param end Index of ending break point
- * @param n Number of words in text
+ * @param bound Index of end or starting bound
+ * @n Number of words in text
+ * @param end Bound is end bound
  * @returns int* array of costs
  */
-int *create_cost_table(char **strings, int line_length, int end, int n);
+int *create_cost_table(char **strings, int line_length, int bound, int n,
+                       int end);
 
 /**
  * @brief Find the optimal line break points for a array of strings and a max

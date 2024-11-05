@@ -119,8 +119,9 @@ int cost(char **strings, int start, int end, int line_length) {
  *
  * @param strings Arrays of strings in text to break
  * @param line_length Max number of chars in single line
- * @param end Index of ending break point
+ * @param bound Index of end or starting bound
  * @n Number of words in text
+ * @param end Bound is end bound
  * @returns int* array of costs
  */
 int *create_cost_table(char **strings, int line_length, int bound, int n,
