@@ -16,19 +16,19 @@ This repository contains a C implementation of dynamic line breaking using dynam
 
 ## Functions
 
-### `char **read_file_to_array(const char *filename, int *num_strings)`
+`char **read_file_to_array(const char *filename, int *num_strings)`
 
 Reads the contents of a text file and returns an array of strings, where each string represents a word from the file.
 
-### `int cost(char **strings, int start, int end, int line_length)`
+`int cost(char **strings, int start, int end, int line_length)`
 
 Calculates the cost for break points between `start` and `end` indices.
 
-### `int *create_cost_table(char **strings, int line_length, int bound, int n, int end)`
+`int *create_cost_table(char **strings, int line_length, int bound, int n, int end)`
 
 Creates a table with costs for a family of break pairs.
 
-### `int *find_line_breaks(char **strings, int line_length, int n)`
+`int *find_line_breaks(char **strings, int line_length, int n)`
 
 Finds the optimal line break points for an array of strings and a maximum line length.
 
