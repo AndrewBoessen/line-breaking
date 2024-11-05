@@ -2,19 +2,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Helper function to check if a value is in an array
+int is_in_array(int value, int *array, int array_size) {
+  for (int i = 0; i < array_size; i++) {
+    if (array[i] == value) {
+      return 1; // Value found in the array
+    }
+  }
+  return 0; // Value not found in the array
+}
 void print_formatted_text(char **strings, int *breaks, int num_strings,
                           int line_length) {
   printf("\nFormatted text with line length %d:\n", line_length);
   printf("----------------------------------------\n");
 
-  int break_idx = 0;
   for (int i = 0; i < num_strings; i++) {
     printf("%s", strings[i]);
 
     // If this position is a break point, print newline
-    if (breaks[break_idx] == i + 1) {
+    // Print new line if i+1 in breaks
+    if (is_in_array(i + 1, breaks, num_strings)) {
       printf("\n");
-      break_idx++;
     } else {
       printf(" "); // Print space between words
     }

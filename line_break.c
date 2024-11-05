@@ -97,7 +97,7 @@ int cost(char **strings, int start, int end, int line_length) {
   }
   // start after end
   if (start > end) {
-    return 100000; // infinite cost
+    return INT_MAX; // infinite cost
   }
   // calculate num character between breaks
   int num_chars = 0;
@@ -111,7 +111,7 @@ int cost(char **strings, int start, int end, int line_length) {
   }
   int white_space = line_length - num_chars;
   // infinite cost if num chars longer than line length
-  return white_space >= 0 ? white_space * white_space : 100000;
+  return white_space >= 0 ? white_space * white_space : INT_MAX;
 }
 
 /**
@@ -123,12 +123,17 @@ int cost(char **strings, int start, int end, int line_length) {
  * @n Number of words in text
  * @returns int* array of costs
  */
-int *create_cost_table(char **strings, int line_length, int end, int n) {
+int *create_cost_table(char **strings, int line_length, int bound, int n,
+                       int end) {
   int *table = (int *)malloc(n * sizeof(int));
 
   // populate table with costs
   for (int i = 1; i <= n; i++) {
-    table[i - 1] = cost(strings, i, end, line_length);
+    if (end == 1) {
+      table[i - 1] = cost(strings, i, bound, line_length);
+    } else {
+      table[i - 1] = cost(strings, bound, i, line_length);
+    }
   }
 
   return table;
@@ -159,43 +164,60 @@ int *find_line_breaks(char **strings, int line_length, int n) {
   // psi values for b_j
   int *psi_vals = NULL;
   // walk back from last line break to first
-  for (int i = n; i >= 1; i--) {
+  // find pis_i value
+  for (int i = n - 1; i >= 0; i--) {
     // find break for b_i
-    if (psi_vals == NULL) {
+    if (i == n - 1) {
       // psi b_n-1 is just costs
-      psi_vals = create_cost_table(strings, line_length, i, n);
+      psi_vals = create_cost_table(strings, line_length, n, n, 1);
+    } else if (i == 0) {
+      psi_vals = create_cost_table(strings, line_length, 0, n, 0);
+      optimal_breaks[i] = psi_vals;
     } else {
       // optimal break values
       int *breaks = (int *)malloc(n * sizeof(int));
       // populate new psi_vals for b_j-1
       int *new_psi_vals = (int *)malloc(n * sizeof(int));
       memset(new_psi_vals, 0xF, n * sizeof(int));
-      // optimize for b_j
+      // find psi_i(j)
       for (int j = 1; j <= n; j++) {
-        // loop over b
-        int *costs = create_cost_table(strings, line_length, j, n);
+        // loop over b_j
+        int best_val = INT_MAX;
+        int best_id = -1;
         for (int k = 1; k <= n; k++) {
-          int cost = costs[k - 1];               // cost(b, b_j)
-          int curr_val = psi_vals[j - 1] + cost; // psi_j(b_j) + cost(b, b_j)
-          if (curr_val < new_psi_vals[k - 1]) {
-            new_psi_vals[k - 1] = curr_val;
-            breaks[k - 1] = j;
+          // psi + cost
+          int curr_val = psi_vals[k - 1] + cost(strings, j, k, line_length);
+          curr_val = curr_val < 0 ? INT_MAX : curr_val;
+          // update if min val
+          if (curr_val < best_val) {
+            best_val = curr_val;
+            best_id = k;
           }
         }
+        // update arrays
+        new_psi_vals[j - 1] = best_val;
+        breaks[j - 1] = best_id;
       }
       optimal_breaks[i] = breaks;
-      free(breaks);
       psi_vals = new_psi_vals;
-      free(new_psi_vals);
     }
-    printArray(psi_vals, n);
   }
 
   // build breaks by walking through optimal_breaks
   int *final_breaks = (int *)malloc((n - 1) * sizeof(int));
-  final_breaks[0] = optimal_breaks[0][0];
+  // argmin on last psi values
+  // this get the first break point
+  int min_index = 0;
+  int min_val = optimal_breaks[0][0];
+  for (int i = 0; i < n; i++) {
+    if (optimal_breaks[0][i] < min_val) {
+      min_val = optimal_breaks[0][i];
+      min_index = i;
+    }
+  }
+  final_breaks[0] = min_index + 1;
   for (int i = 1; i < n - 1; i++) {
-    final_breaks[i] = optimal_breaks[i][final_breaks[i - 1]];
+    final_breaks[i] = optimal_breaks[i][final_breaks[i - 1] - 1];
     free(optimal_breaks[i]);
   }
 
