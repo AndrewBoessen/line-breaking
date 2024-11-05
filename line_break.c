@@ -138,16 +138,6 @@ int *create_cost_table(char **strings, int line_length, int bound, int n,
 
   return table;
 }
-void printArray(int arr[], int size) {
-  printf("Array elements: ");
-  for (int i = 0; i < size; i++) {
-    printf("%d", arr[i]);
-    if (i < size - 1) {
-      printf(", ");
-    }
-  }
-  printf("\n");
-}
 
 /**
  * @brief Find the optimal line break points for a array of strings and a max
